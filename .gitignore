@@ -1,0 +1,5 @@
+faux-rtos*
+events.log
+policies/
+*.kinfer
+*.swp
