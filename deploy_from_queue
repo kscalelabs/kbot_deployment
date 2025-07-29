@@ -1,12 +1,16 @@
 #!/bin/bash
 
 if ! [ $(which klog-deploy) ]; then
-    echo "klog-deploy not found"
+    echo "klog-deploy not found, please install klog-robot package"
     exit 1
 fi
 
 policy_dir="./policies"
 
 policy="$policy_dir/$(find "$policy_dir" -maxdepth 1 -type f -maxdepth 1 -printf "%T@ %f\n" | sort -nr | cut -d' ' -f2- | fzf --prompt 'Policy to deploy: ' --height 20% --reverse)"
+
+if [ -z $policy ]; then
+    echo "No policy selected. Exiting"
+fi
 
 klog-deploy scripts/run "$policy"
