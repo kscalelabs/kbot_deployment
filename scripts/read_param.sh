@@ -58,7 +58,7 @@ echo "Setting up CAN interfaces..."
 
 ifaces="$(ip link show | grep -oP 'can[0-9]+' | sort -u)"
 
-for interface in "$ifaces"; do
+for interface in $ifaces; do
     echo "Bringing up $interface..."
     sudo ip link set $interface down 2>/dev/null
     sudo ip link set $interface type can bitrate 1000000 2>/dev/null

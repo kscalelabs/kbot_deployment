@@ -7,10 +7,10 @@ fi
 
 policy_dir="./policies"
 
-policy="$policy_dir/$(find "$policy_dir" -maxdepth 1 -type f -maxdepth 1 -printf "%T@ %f\n" | sort -nr | cut -d' ' -f2- | fzf --prompt 'Policy to deploy: ' --height 20% --reverse)"
+policy="$policy_dir/$(find "$policy_dir" -maxdepth 1 -type f -printf "%T@ %f\n" | sort -nr | cut -d' ' -f2- | fzf --prompt 'Policy to deploy: ' --height 20% --reverse)"
 
 if [ -z $policy ]; then
-    echo "No policy selected. Exiting"
+    echo "No policy selected."
 fi
 
-klog-deploy scripts/run "$policy"
+klog-deploy scripts/run_test_fw "$policy"

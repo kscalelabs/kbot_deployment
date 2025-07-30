@@ -6,6 +6,8 @@ cd $(pwd | sed 's/kbot_deployment.*/kbot_deployment/')
 
 scripts/set_can.sh
 
+#scripts/clear_faults.sh
+
 scripts/reset_max_torques.sh
 
 if [ -f "$kinfer_file" ]; then
@@ -17,4 +19,4 @@ fi
 
 shift
 
-sudo -E chrt 80 ~/kbot_deployment/faux-rtos "$@"
+sudo -E chrt 80 ./faux-rtos "$@"

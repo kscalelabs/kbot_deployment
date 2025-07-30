@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+selected="$*"
+
 declare -A actuators=(
     [11]="Lsp"
     [12]="Lsr"
@@ -38,23 +40,26 @@ done
 # TODO Discover actuators
 # read -p "Press enter to discover actuators..."
 
-selected="$(for i in {1..4}; do for j in {1..5}; do echo $i$j ${actuators[$i$j]}; done; done | fzf --reverse --height 20 | awk '{print $1}')"
+if [ -z "$selected" ]; then
+    selected="$(for i in {1..4}; do for j in {1..5}; do echo $i$j ${actuators[$i$j]}; done; done | fzf -m --reverse --height 20 | awk '{print $1}')"
+fi
 
-read -p "Selected actuator: $selected. Press enter to request feedback..."
+echo "Pinging actuators: $(echo $selected | tr '\n' ' ')"
 
-id=$(printf "%.2X" "$selected")
+for id_dec in $selected; do
+    id=$(printf "%.2X" "$id_dec")
+    resp=""
 
-FOURPI=12.5663706144
-
-for interface in $ifaces; do
-    resp="true"
-    while [ "$resp" ]; do
-        resp="$(candump  -T 20 $interface,0200${id}FD:00FFFFFF & sleep .01;
-               cansend $interface 0200FD${id}#00.00.00.00.00.00.00.00)"
-        posbytes=$(echo "$resp" | awk '{print $4 $5}')
-        posfloat=$(echo "ibase=16; $posbytes/FFFF" | bc -l)
-        posrad=$(echo "-$FOURPI + $posfloat*$FOURPI * 2" | bc -l)
-        echo $posrad
+    for interface in $ifaces; do
+        resp="$(candump  -T 200 $interface,0000${id}FD:0000FF00 & sleep .01;
+                cansend $interface 0200FD${id}#00)"
+        if [ "$resp" ]; then
+	    echo "Actuator $id_dec responded: $resp"
+            break
+        fi
     done
-    echo "Did not recieve response."
+
+    if [ -z "$resp" ]; then
+        echo "No response from actuator $id_dec (${actuators[$id_dec]})"
+    fi
 done

@@ -73,7 +73,7 @@ echo "Setting up CAN interfaces..."
 
 ifaces="$(ip link show | grep -oP 'can[0-9]+' | sort -u)"
 
-for interface in "$ifaces"; do
+for interface in $ifaces; do
     echo "Bringing up $interface..."
     sudo ip link set $interface down
     sudo ip link set $interface type can bitrate 1000000
@@ -97,7 +97,7 @@ for id_dec in $selected; do
 
     for interface in $ifaces; do
 	# read -p "Send 1200FD${id}#0B.70.00.00.${val_littleendian} ?"
-        resp="$(candump  -T 25 $interface,0200${id}FD:00FFFFFF & sleep .01;
+        resp="$(candump  -T 25 $interface,0200${id}FD:0000FF00 & sleep .01;
 		cansend $interface 1200FD${id}#0B.70.00.00.${val_littleendian})"
         if [ "$resp" ]; then
             echo "Set max_torque to $val on actuator $id_dec (${actuators[$id_dec]}): $resp"
