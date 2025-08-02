@@ -4,8 +4,6 @@ kinfer_file="$(realpath $1)"
 
 cd $(pwd | sed 's/kbot_deployment.*/kbot_deployment/')
 
-scripts/set_can.sh
-
 scripts/reset_max_torques.sh
 
 if [ -f "$kinfer_file" ]; then
