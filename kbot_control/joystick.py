@@ -25,8 +25,7 @@ class ControlVector:
 
 class Commander:
     def __init__(self):
-        self.UDP_IP = "kbotv2-no11"
-        #self.UDP_IP = "localhost"
+        self.UDP_IP = "localhost"
         self.UDP_PORT = 10000
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.max_cmd = 0.5
@@ -41,14 +40,7 @@ class Commander:
         self.max_cmd = max(self.max_cmd - 0.1, self._ultimate_min)
 
     def update_commands_from_controller(self, ctrl: Controller) -> None:
-        if ctrl.TRIGGER_LEFT < 0.9:
-            self.cmds = ControlVector(
-                XVel=0,
-                YVel=0,
-                YawRate=0,
-            )
-
-        else:
+        if ctrl.btns.LB == ButtonState.PRESSED:
             XVel_norm = -ctrl.JOYSTICK_LEFT_Y # Robot forward is positive X, stick down is positive
             YVel_norm = -ctrl.JOYSTICK_LEFT_X # Robot left is positive Y, stick right is positive
             YawRate_norm = -ctrl.JOYSTICK_RIGHT_X # Robot counterclockwise is positive, stick right is positive
@@ -60,6 +52,13 @@ class Commander:
                 YVel=YVel_norm * max_cmd,
                 YawRate=YawRate_norm * max_cmd,
                 )
+
+        else:
+            self.cmds = ControlVector(
+                XVel=0,
+                YVel=0,
+                YawRate=0,
+            )
 
     def command(self) -> None:
         msg = self.cmds.to_msg()
@@ -88,7 +87,7 @@ class CommandDisplay:
         return f"[{color}][{bar}][/{color}] {value:+.2f}"
 
     def render_table(self, cmds: ControlVector) -> Table:
-        speed_text = f"[bold blink bright_yellow on magenta] MAX COMMAND: {round(self.commander.max_cmd, 1)} 🚀[/]"
+        speed_text = f"[bold blink bright_yellow on magenta] MAX COMMAND: {round(self.commander.max_cmd, 1)}[/]"
 
         table = Table(title=f"Control Vector", box=None)
 
