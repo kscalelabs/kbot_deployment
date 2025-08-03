@@ -87,7 +87,7 @@ class CommandDisplay:
         return f"[{color}][{bar}][/{color}] {value:+.2f}"
 
     def render_table(self, cmds: ControlVector) -> Table:
-        speed_text = f"[bold blink bright_yellow on magenta] MAX COMMAND: {round(self.commander.max_cmd, 1)}[/]"
+        speed_text = f"[bold blink bright_yellow on magenta]MAX COMMAND: {round(self.commander.max_cmd, 1)}[/]"
 
         table = Table(title=f"Control Vector", box=None)
 

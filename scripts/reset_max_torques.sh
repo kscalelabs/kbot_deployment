@@ -71,18 +71,15 @@ declare -A max_torques=(
 
 echo "Setting up CAN interfaces..."
 
-ifaces="$(ip link show | grep -oP 'can[0-9]+' | sort -u)"
-
-for interface in $ifaces; do
-    echo "Bringing up $interface..."
-    sudo ip link set $interface down
-    sudo ip link set $interface type can bitrate 1000000
-    sudo ip link set $interface txqueuelen 1000
-    sudo ip link set $interface up
+for i in {0..4}; do
+    echo "Setting up can$i..."
+    sudo ip link set can$i down
+    sudo ip link set can$i type can bitrate 1000000
+    sudo ip link set can$i txqueuelen 1000
+    sudo ip link set can$i up
 done
 
-# TODO Discover actuators
-# read -p "Press enter to discover actuators..."
+ifaces="$(ip link show | grep -oP 'can[0-9]+' | sort -u)"
 
 selected="$(for i in {1..4}; do for j in {1..5}; do echo $i$j; done; done)"
 
@@ -95,12 +92,12 @@ for id_dec in $selected; do
 
     resp=""
 
-    for interface in $ifaces; do
-	# read -p "Send 1200FD${id}#0B.70.00.00.${val_littleendian} ?"
+    for interface in $last_iface $ifaces; do
         resp="$(candump  -T 25 $interface,0200${id}FD:0000FF00 & sleep .01;
 		cansend $interface 1200FD${id}#0B.70.00.00.${val_littleendian})"
         if [ "$resp" ]; then
-            echo "Set max_torque to $val on actuator $id_dec (${actuators[$id_dec]}): $resp"
+	    echo "Set max_torque to $(printf "%04.1f" "$val") on actuator $id_dec (${actuators[$id_dec]}): $resp"
+	    last_iface="$interface"
             break
         fi
     done

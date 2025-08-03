@@ -3,3 +3,4 @@ events.log
 policies/
 *.kinfer
 *.swp
+__pycache__/
