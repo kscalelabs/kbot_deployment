@@ -1,4 +1,4 @@
-# A bunch of random deployment shit
+# A bunch of random deployment stuff
 
 - `scripts` has diagnostic & helper scripts, hopefully with reasonable names
 - `scripts/run` is for running the firmware, give it the policy as an argument
