@@ -13,4 +13,4 @@ if [ -z $policy ]; then
     echo "No policy selected."
 fi
 
-klog-deploy scripts/run_test_fw "$policy"
+klog-deploy scripts/run "$policy"
