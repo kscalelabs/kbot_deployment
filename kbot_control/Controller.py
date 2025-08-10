@@ -3,14 +3,6 @@ from types import SimpleNamespace
 from inputs import get_gamepad
 import asyncio
 
-def deadband(value: float, threshold: float) -> float:
-    return value if abs(value) > threshold else 0.0
-
-def clean_joystick(value: int) -> float:
-    return deadband(value / 32768, .07)
-
-def clean_trigger(value: int) -> float:
-    return value / 255.0
 
 class ButtonState(Enum):
     PRESSED = auto()
@@ -55,17 +47,17 @@ class Controller:
         events = get_gamepad()
         for event in events: 
             if event.code == "ABS_Y":
-                self.JOYSTICK_LEFT_Y = clean_joystick(event.state)
+                self.JOYSTICK_LEFT_Y = self._clean_joystick(event.state)
             elif event.code == "ABS_X":
-                self.JOYSTICK_LEFT_X = clean_joystick(event.state)
+                self.JOYSTICK_LEFT_X = self._clean_joystick(event.state)
             elif event.code == "ABS_RY":
-                self.JOYSTICK_RIGHT_Y = clean_joystick(event.state)
+                self.JOYSTICK_RIGHT_Y = self._clean_joystick(event.state)
             elif event.code == "ABS_RX":
-                self.JOYSTICK_RIGHT_X = clean_joystick(event.state)
+                self.JOYSTICK_RIGHT_X = self._clean_joystick(event.state)
             elif event.code == "ABS_Z":
-                self.TRIGGER_LEFT = clean_trigger(event.state)
+                self.TRIGGER_LEFT = self._clean_trigger(event.state)
             elif event.code == "ABS_RZ":
-                self.TRIGGER_RIGHT = clean_trigger(event.state)
+                self.TRIGGER_RIGHT = self._clean_trigger(event.state)
             elif event.code == "BTN_TL":
                 self.btns.LB = ButtonState.PRESSED if event.state else ButtonState.RELEASED
             elif event.code == "BTN_TR":
@@ -86,3 +78,12 @@ class Controller:
             elif event.code == "ABS_HAT0Y":
                 self.btns.UP = ButtonState.PRESSED if event.state < 0 else ButtonState.RELEASED
                 self.btns.DOWN = ButtonState.PRESSED if event.state > 0 else ButtonState.RELEASED
+
+    def _deadband(self, value: float, threshold: float) -> float:
+        return value if abs(value) > threshold else 0.0
+
+    def _clean_joystick(self, value: int) -> float:
+        return self._deadband(value / 32768, .1)
+
+    def _clean_trigger(self, value: int) -> float:
+        return value / 255.0
