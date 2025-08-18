@@ -15,4 +15,4 @@ fi
 
 shift
 
-sudo -E chrt 80 ~/kbot_deployment/faux-rtos --lpf-cutoff-hz 10 "$@"
+sudo -E chrt 80 ~/kbot_deployment/faux-rtos --lpf-cutoff-hz 10 --min-jerk-blend-ms 0 "$@"
