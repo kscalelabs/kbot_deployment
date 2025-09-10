@@ -1,24 +1,25 @@
-import json
-import socket
-import time
-import threading
-from dataclasses import dataclass
-from typing import Tuple
-import os
-import sys
-import select
-import termios
-import tty
 import atexit
+import json
+import select
+import socket
+import sys
+import termios
+import threading
+import time
+import tty
+from dataclasses import dataclass
+from typing import Callable
 
 from rich.live import Live
 from rich.table import Table
 
+from motions import Motion, MOTIONS
+
 
 class KeyboardState:
-    """Tracks keybboard presses to update the command vector."""
+    """Tracks keyboard presses to update the command vector."""
 
-    def __init__(self) -> None:
+    def __init__(self, dt) -> None:
         self._reset_cmd()
         
         # Set up stdin for raw input
@@ -31,9 +32,16 @@ class KeyboardState:
         self._running = True
         self._thread = threading.Thread(target=self._read_keyboard, daemon=True)
         self._thread.start()
+
+        # Motion state
+        self._current_motion: Motion | None = None
+        self._motion_dt = dt
     
     def _reset_cmd(self) -> None:
         self.cmd = [0.0] * 16
+
+    def set_motion(self, motion_fn: Callable[[float], Motion]):
+        self._current_motion = motion_fn(dt=self._motion_dt)
 
     def _read_keyboard(self) -> None:
         while self._running:
@@ -45,9 +53,56 @@ class KeyboardState:
             try:
                 ch = sys.stdin.read(1).lower()
 
+                # Motion controls
+                if ch == 'z':
+                    self.set_motion(MOTIONS['salute'])
+                if ch == 'x':
+                    self.set_motion(MOTIONS['wave'])
+                # if ch == 'c':
+                    self.set_motion(MOTIONS['pickup'])
+                #     self.set_motion(MOTIONS['pickup'])
+                # if ch == 'v':
+                #     self.set_motion(MOTIONS['wild_walk'])
+                # if ch == 'b':
+                #     self.set_motion(MOTIONS['zombie_walk'])
+                # if ch == 'n':
+                #     self.set_motion(MOTIONS['pirouette'])
+                # if ch == 'm':
+                #     self.set_motion(MOTIONS['backflip'])
+                # if ch == ',':
+                #     self.set_motion(MOTIONS['boxing'])
+                # if ch == '.':
+                #     self.set_motion(MOTIONS['cone'])
+                # if ch == '/':
+                #     self.set_motion(MOTIONS['squats'])
+
+                # Test motion controls
+                if ch == '1':
+                    self.set_motion(MOTIONS['test_rsp'])
+                if ch == '2':
+                    self.set_motion(MOTIONS['test_rsr'])
+                if ch == '3':
+                    self.set_motion(MOTIONS['test_rsy'])
+                if ch == '4':
+                    self.set_motion(MOTIONS['test_re'])
+                if ch == '5':
+                    self.set_motion(MOTIONS['test_rw'])
+                if ch == '6':
+                    self.set_motion(MOTIONS['test_lsp'])
+                if ch == '7':
+                    self.set_motion(MOTIONS['test_lsr'])
+                if ch == '8':
+                    self.set_motion(MOTIONS['test_lsy'])
+                if ch == '9':
+                    self.set_motion(MOTIONS['test_le'])
+                # if ch == '0': # need zero for reset
+                #     self.set_motion(MOTIONS['test_lw'])
+
+
                 # base controls
                 if ch == '0':
                     self._reset_cmd()
+                    self._current_motion = None  # Stop any playing motion
                 if ch == 'w':
                     self.cmd[0] += 0.1
                 if ch == 's':
@@ -81,6 +136,19 @@ class KeyboardState:
             except (IOError, EOFError):
                 continue
 
+    def get_cmd(self) -> list[float]:
+        if self._current_motion is not None:
+            result = self._current_motion.get_next_motion_frame()
+            if result is None:
+                # Motion complete, reset
+                self._current_motion = None
+                return self.cmd
+            
+            commands, positions = result
+            self.cmd = [*commands, *positions]
+    
+        return self.cmd
+
 
 @dataclass
 class ControlVectorMessage:
@@ -108,12 +176,15 @@ class ControlVectorMessage:
         )
         return json_str.encode("utf-8")
 
+
 class Commander:
-    def __init__(self):
+    def __init__(self, dt: float):
+        self.dt = dt
+
         self.UDP_IP = "localhost"
         self.UDP_PORT = 10000
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        
+
         # Start command thread
         self._running = True
         self._keyboard = None
@@ -126,10 +197,9 @@ class Commander:
     def _command_loop(self) -> None:
         while self._running:
             if self._keyboard is not None:
-                cmd = ControlVectorMessage(*self._keyboard.cmd)
+                cmd = ControlVectorMessage(*self._keyboard.get_cmd())
                 self.sock.sendto(cmd.to_msg(), (self.UDP_IP, self.UDP_PORT))
-            time.sleep(1/20)
-
+            time.sleep(self.dt)
 
 
 class CommandDisplay:
@@ -184,6 +254,8 @@ class CommandDisplay:
 
 
 if __name__ == "__main__":
-    kb = KeyboardState()
-    cmd = Commander()
+    dt = 0.02
+    kb = KeyboardState(dt)
+    cmd = Commander(dt)
+    cmd.set_keyboard(kb)
     CommandDisplay(kb, cmd).run()
