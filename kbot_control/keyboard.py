@@ -108,16 +108,28 @@ class ControlVectorMessage:
         )
         return json_str.encode("utf-8")
 
-
 class Commander:
     def __init__(self):
         self.UDP_IP = "localhost"
         self.UDP_PORT = 10000
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        
+        # Start command thread
+        self._running = True
+        self._keyboard = None
+        self._thread = threading.Thread(target=self._command_loop, daemon=True)
+        self._thread.start()
 
-    def command(self, kb: KeyboardState) -> None:
-        cmd = ControlVectorMessage(*kb.cmd)
-        self.sock.sendto(cmd.to_msg(), (self.UDP_IP, self.UDP_PORT))
+    def set_keyboard(self, kb: KeyboardState) -> None:
+        self._keyboard = kb
+
+    def _command_loop(self) -> None:
+        while self._running:
+            if self._keyboard is not None:
+                cmd = ControlVectorMessage(*self._keyboard.cmd)
+                self.sock.sendto(cmd.to_msg(), (self.UDP_IP, self.UDP_PORT))
+            time.sleep(1/20)
+
 
 
 class CommandDisplay:
@@ -166,7 +178,6 @@ class CommandDisplay:
             try:
                 while True:
                     live.update(self.render_table())
-                    self.commander.command(self.keyboard)
                     time.sleep(0.05)
             except KeyboardInterrupt:
                 pass
