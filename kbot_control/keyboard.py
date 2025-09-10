@@ -169,12 +169,40 @@ class ControlVectorMessage:
     LElbowRoll: float = 0.0
     LWristPitch: float = 0.0
 
+    # Define limits for each control
+    _LIMITS = {
+        'XVel': (-0.3, 0.3),
+        'YVel': (-0.3, 0.3),
+        'YawRate': (-0.3, 0.3),
+        'BaseHeight': (-0.3, 0.0),
+        'BaseRoll': (-0.3, 0.3),
+        'BasePitch': (-0.3, 0.3),
+        'RShoulderPitch': (-3.4907, 1.0472),
+        'RShoulderRoll': (-1.4835, 0.6109),
+        'RElbowPitch': (-1.6719, 1.6719),
+        'RElbowRoll': (-1.5708, 0.9076),
+        'RWristPitch': (-1.3788, 1.3788),
+        'LShoulderPitch': (-1.0472, 3.4907),
+        'LShoulderRoll': (-0.6109, 1.4835),
+        'LElbowPitch': (-1.6719, 1.6719),
+        'LElbowRoll': (-0.9076, 1.5708),
+        'LWristPitch': (-1.3788, 1.3788)
+    }
+
+    def __post_init__(self):
+        # Clip all values to their limits
+        for name, value in self.__dict__.items():
+            if name != '_LIMITS':
+                setattr(self, name, self._clip_value(name, value))
+
+    def _clip_value(self, name: str, value: float) -> float:
+        min_val, max_val = self._LIMITS[name]
+        return max(min_val, min(max_val, value))
+
     def to_msg(self) -> bytes:
-        json_str = (
-            json.dumps({k: getattr(self, k) for k in self.__dataclass_fields__})
-            + "\n"
-        )
-        return json_str.encode("utf-8")
+        # Convert all fields except _LIMITS to JSON
+        data = {k: v for k, v in self.__dict__.items() if k != '_LIMITS'}
+        return (json.dumps(data) + "\n").encode("utf-8")
 
 
 class Commander:
@@ -207,14 +235,13 @@ class CommandDisplay:
         self.keyboard = keyboard
         self.commander = commander
 
-    def make_bar(self, value: float, width: int = 100, color: str = "white", inverted: bool = False) -> str:
-        min_val, max_val = -0.3, 0.3
+    def make_bar(self, value: float, min_val: float = -0.3, max_val: float = 0.3, color: str = "white", inverted: bool = False) -> str:
         normalized = (value - min_val) / (max_val - min_val)
         if inverted:
             normalized = 1.0 - normalized
         normalized = max(0.0, min(1.0, normalized))
-        filled = int(normalized * width)
-        bar = "█" * filled + " " * (width - filled)
+        filled = int(normalized * 50)
+        bar = "█" * filled + " " * (50 - filled)
         return f"[{color}][{bar}][/{color}] {value:+.2f}"
 
     def render_table(self) -> Table:
@@ -239,7 +266,8 @@ class CommandDisplay:
             r = int(255 * (1 - i/len(names)))
             g = int(100 + (155 * i/len(names)))  
             b = int(255 * i/len(names))
-            table.add_row(name, self.make_bar(self.keyboard.cmd[i+6], color=f"rgb({r},{g},{b})"))
+            min_val, max_val = ControlVectorMessage._LIMITS[name]
+            table.add_row(name, self.make_bar(self.keyboard.cmd[i+6], min_val, max_val, color=f"rgb({r},{g},{b})"))
 
         return table
 
