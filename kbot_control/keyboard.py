@@ -115,7 +115,7 @@ class KeyboardState:
                     self.cmd[2] += 0.1
                 if ch == 'e':
                     self.cmd[2] -= 0.1
-                
+
                 # base pose
                 if ch == '=':
                     self.cmd[3] += 0.05
@@ -221,7 +221,7 @@ class CommandDisplay:
         table = Table(title="Control Vector", box=None)
         table.add_column("Axis", justify="right", no_wrap=True)
         table.add_column("Value", justify="center")
-        
+
         # Main controls with distinct colors
         table.add_row("XVel", self.make_bar(self.keyboard.cmd[0], color="red"))
         table.add_row("YVel", self.make_bar(self.keyboard.cmd[1], color="green"))
@@ -240,7 +240,7 @@ class CommandDisplay:
             g = int(100 + (155 * i/len(names)))  
             b = int(255 * i/len(names))
             table.add_row(name, self.make_bar(self.keyboard.cmd[i+6], color=f"rgb({r},{g},{b})"))
-        
+
         return table
 
     def run(self) -> None:
