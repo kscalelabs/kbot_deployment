@@ -45,6 +45,7 @@ class KeyboardState:
             try:
                 ch = sys.stdin.read(1).lower()
 
+                # base controls
                 if ch == '0':
                     self._reset_cmd()
                 if ch == 'w':
@@ -59,6 +60,20 @@ class KeyboardState:
                     self.cmd[2] += 0.1
                 if ch == 'e':
                     self.cmd[2] -= 0.1
+                
+                # base pose
+                if ch == '=':
+                    self.cmd[3] += 0.05
+                if ch == '-':
+                    self.cmd[3] -= 0.05
+                if ch == 'r':
+                    self.cmd[4] += 0.1
+                if ch == 'f':
+                    self.cmd[4] -= 0.1
+                if ch == 't':
+                    self.cmd[5] += 0.1
+                if ch == 'g':
+                    self.cmd[5] -= 0.1
 
                 # diy clamp
                 self.cmd = [max(-0.3, min(0.3, cmd)) for cmd in self.cmd]
@@ -72,9 +87,9 @@ class ControlVectorMessage:
     XVel: float = 0.0
     YVel: float = 0.0
     YawRate: float = 0.0
+    BaseHeight: float = 0.0
     BaseRoll: float = 0.0
     BasePitch: float = 0.0
-    BaseHeight: float = 0.0
     RShoulderPitch: float = 0.0
     RShoulderRoll: float = 0.0
     RElbowPitch: float = 0.0
@@ -125,10 +140,24 @@ class CommandDisplay:
         table.add_column("Axis", justify="right", no_wrap=True)
         table.add_column("Value", justify="center")
         
-        table.add_row("")  # Spacer
+        # Main controls with distinct colors
         table.add_row("XVel", self.make_bar(self.keyboard.cmd[0], color="red"))
-        table.add_row("YVel", self.make_bar(self.keyboard.cmd[1], color="green", inverted=True))
-        table.add_row("Yaw", self.make_bar(self.keyboard.cmd[2], color="blue", inverted=True))
+        table.add_row("YVel", self.make_bar(self.keyboard.cmd[1], color="green"))
+        table.add_row("Yaw", self.make_bar(self.keyboard.cmd[2], color="blue"))
+        table.add_row("")
+
+        table.add_row("BaseHeight", self.make_bar(self.keyboard.cmd[3], color="yellow"))
+        table.add_row("BaseRoll", self.make_bar(self.keyboard.cmd[4], color="cyan"))
+        table.add_row("BasePitch", self.make_bar(self.keyboard.cmd[5], color="magenta"))
+        table.add_row("")
+
+        # All other commands in gradient
+        names = list(ControlVectorMessage.__dataclass_fields__.keys())[6:]
+        for i, name in enumerate(names):
+            r = int(255 * (1 - i/len(names)))
+            g = int(100 + (155 * i/len(names)))  
+            b = int(255 * i/len(names))
+            table.add_row(name, self.make_bar(self.keyboard.cmd[i+6], color=f"rgb({r},{g},{b})"))
         
         return table
 
