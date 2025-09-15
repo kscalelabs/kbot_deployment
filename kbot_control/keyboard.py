@@ -58,7 +58,7 @@ class KeyboardState:
                     self.set_motion(MOTIONS['salute'])
                 if ch == 'x':
                     self.set_motion(MOTIONS['wave'])
-                # if ch == 'c':
+                if ch == 'c':
                     self.set_motion(MOTIONS['pickup'])
                 #     self.set_motion(MOTIONS['pickup'])
                 # if ch == 'v':
@@ -287,3 +287,6 @@ if __name__ == "__main__":
     cmd = Commander(dt)
     cmd.set_keyboard(kb)
     CommandDisplay(kb, cmd).run()
+
+
+# TODO interpolated motions dont fully go back to 0
