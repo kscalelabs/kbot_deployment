@@ -15,4 +15,6 @@ fi
 
 shift
 
-sudo -E chrt 80 ~/kbot_deployment/faux-rtos --lpf-cutoff-hz 10 --min-jerk-blend-ms 0 "$@"
+export RUST_LOG=debug
+
+sudo -E chrt 80 ~/kbot_deployment/faux-rtos --lpf-cutoff-hz 0 "$@" --min-jerk-blend-ms 0 "$@"

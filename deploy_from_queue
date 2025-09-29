@@ -6,7 +6,7 @@ if ! [ $(which klog-deploy) ]; then
 fi
 
 policy_dir="./policies"
-remote_policies="klog:~/kodachrome/policies/"
+remote_policies="mu:~/kodachrome/policies/"
 
 mkdir -p "$policy_dir"
 rsync -aLP --ignore-existing "$remote_policies" "$policy_dir/"
