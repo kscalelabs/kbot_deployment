@@ -58,8 +58,7 @@ class KeyboardState:
                     self.set_motion(MOTIONS['salute'])
                 if ch == 'x':
                     self.set_motion(MOTIONS['wave'])
-                if ch == 'c':
-                    self.set_motion(MOTIONS['pickup'])
+                # if ch == 'c':
                 #     self.set_motion(MOTIONS['pickup'])
                 # if ch == 'v':
                 #     self.set_motion(MOTIONS['wild_walk'])
@@ -77,24 +76,24 @@ class KeyboardState:
                 #     self.set_motion(MOTIONS['squats'])
 
                 # Test motion controls
-                if ch == '1':
-                    self.set_motion(MOTIONS['test_rsp'])
-                if ch == '2':
-                    self.set_motion(MOTIONS['test_rsr'])
-                if ch == '3':
-                    self.set_motion(MOTIONS['test_rsy'])
-                if ch == '4':
-                    self.set_motion(MOTIONS['test_re'])
-                if ch == '5':
-                    self.set_motion(MOTIONS['test_rw'])
-                if ch == '6':
-                    self.set_motion(MOTIONS['test_lsp'])
-                if ch == '7':
-                    self.set_motion(MOTIONS['test_lsr'])
-                if ch == '8':
-                    self.set_motion(MOTIONS['test_lsy'])
-                if ch == '9':
-                    self.set_motion(MOTIONS['test_le'])
+                # if ch == '1':
+                #     self.set_motion(MOTIONS['test_rsp'])
+                # if ch == '2':
+                #     self.set_motion(MOTIONS['test_rsr'])
+                # if ch == '3':
+                #     self.set_motion(MOTIONS['test_rsy'])
+                # if ch == '4':
+                #     self.set_motion(MOTIONS['test_re'])
+                # if ch == '5':
+                #     self.set_motion(MOTIONS['test_rw'])
+                # if ch == '6':
+                #     self.set_motion(MOTIONS['test_lsp'])
+                # if ch == '7':
+                #     self.set_motion(MOTIONS['test_lsr'])
+                # if ch == '8':
+                #     self.set_motion(MOTIONS['test_lsy'])
+                # if ch == '9':
+                #     self.set_motion(MOTIONS['test_le'])
                 # if ch == '0': # need zero for reset
                 #     self.set_motion(MOTIONS['test_lw'])
 
